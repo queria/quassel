@@ -38,12 +38,16 @@ HighlightSettingsPage::HighlightSettingsPage(QWidget *parent)
     ui.highlightTable->horizontalHeaderItem(HighlightSettingsPage::CsColumn)->setToolTip("<b>CS</b>: This option determines if the highlight rule should be interpreted <b>case sensitive</b>.");
     ui.highlightTable->horizontalHeaderItem(HighlightSettingsPage::CsColumn)->setWhatsThis("<b>CS</b>: This option determines if the highlight rule should be interpreted <b>case sensitive</b>.");
 
+    ui.highlightTable->horizontalHeaderItem(HighlightSettingsPage::CheckNickColumn)->setToolTip("<b>Nick</b>: This option determines if the highlight rule should be used also on <b>senders nick</b>.");
+    ui.highlightTable->horizontalHeaderItem(HighlightSettingsPage::CheckNickColumn)->setWhatsThis("<b>Nick</b>: This option determines if the highlight rule should be used also on <b>senders nick</b>.");
+
     ui.highlightTable->horizontalHeaderItem(HighlightSettingsPage::ChanColumn)->setToolTip("<b>Channel</b>: This regular expression determines for which <b>channels</b> the highlight rule works. Leave blank to match any channel. Put <b>!</b> in the beginning to negate. Case insensitive.");
     ui.highlightTable->horizontalHeaderItem(HighlightSettingsPage::ChanColumn)->setWhatsThis("<b>Channel</b>: This regular expression determines for which <b>channels</b> the highlight rule works. Leave blank to match any channel. Put <b>!</b> in the beginning to negate. Case insensitive.");
 
     ui.highlightTable->horizontalHeader()->setResizeMode(HighlightSettingsPage::NameColumn, QHeaderView::Stretch);
     ui.highlightTable->horizontalHeader()->setResizeMode(HighlightSettingsPage::RegExColumn, QHeaderView::ResizeToContents);
     ui.highlightTable->horizontalHeader()->setResizeMode(HighlightSettingsPage::CsColumn, QHeaderView::ResizeToContents);
+    ui.highlightTable->horizontalHeader()->setResizeMode(HighlightSettingsPage::CheckNickColumn, QHeaderView::ResizeToContents);
     ui.highlightTable->horizontalHeader()->setResizeMode(HighlightSettingsPage::EnableColumn, QHeaderView::ResizeToContents);
     ui.highlightTable->horizontalHeader()->setResizeMode(HighlightSettingsPage::ChanColumn, QHeaderView::ResizeToContents);
 
@@ -78,7 +82,7 @@ void HighlightSettingsPage::defaults()
 }
 
 
-void HighlightSettingsPage::addNewRow(QString name, bool regex, bool cs, bool enable, QString chanName, bool self)
+void HighlightSettingsPage::addNewRow(QString name, bool regex, bool cs, bool checkNick, bool enable, QString chanName, bool self)
 {
     ui.highlightTable->setRowCount(ui.highlightTable->rowCount()+1);
 
@@ -98,6 +102,13 @@ void HighlightSettingsPage::addNewRow(QString name, bool regex, bool cs, bool en
         csItem->setCheckState(Qt::Unchecked);
     csItem->setFlags(Qt::ItemIsUserCheckable|Qt::ItemIsEnabled|Qt::ItemIsSelectable);
 
+    QTableWidgetItem *checkNickItem =new QTableWidgetItem("");
+    if (checkNick)
+        checkNickItem->setCheckState(Qt::Checked);
+    else
+        checkNickItem->setCheckState(Qt::Unchecked);
+    checkNickItem->setFlags(Qt::ItemIsUserCheckable|Qt::ItemIsEnabled|Qt::ItemIsSelectable);
+
     QTableWidgetItem *enableItem = new QTableWidgetItem("");
     if (enable)
         enableItem->setCheckState(Qt::Checked);
@@ -111,6 +122,7 @@ void HighlightSettingsPage::addNewRow(QString name, bool regex, bool cs, bool en
     ui.highlightTable->setItem(lastRow, HighlightSettingsPage::NameColumn, nameItem);
     ui.highlightTable->setItem(lastRow, HighlightSettingsPage::RegExColumn, regexItem);
     ui.highlightTable->setItem(lastRow, HighlightSettingsPage::CsColumn, csItem);
+    ui.highlightTable->setItem(lastRow, HighlightSettingsPage::CheckNickColumn, checkNickItem);
     ui.highlightTable->setItem(lastRow, HighlightSettingsPage::EnableColumn, enableItem);
     ui.highlightTable->setItem(lastRow, HighlightSettingsPage::ChanColumn, chanNameItem);
 
@@ -121,6 +133,7 @@ void HighlightSettingsPage::addNewRow(QString name, bool regex, bool cs, bool en
     highlightRule["Name"] = name;
     highlightRule["RegEx"] = regex;
     highlightRule["CS"] = cs;
+    highlightRule["CheckNick"] = checkNick;
     highlightRule["Enable"] = enable;
     highlightRule["Channel"] = chanName;
 
@@ -190,6 +203,9 @@ void HighlightSettingsPage::tableChanged(QTableWidgetItem *item)
     case HighlightSettingsPage::CsColumn:
         highlightRule["CS"] = (item->checkState() == Qt::Checked);
         break;
+    case HighlightSettingsPage::CheckNickColumn:
+        highlightRule["CheckNick"] = (item->checkState() == Qt::Checked);
+        break;
     case HighlightSettingsPage::EnableColumn:
         highlightRule["Enable"] = (item->checkState() == Qt::Checked);
         break;
@@ -215,10 +231,11 @@ void HighlightSettingsPage::load()
         QString name = highlightRule["Name"].toString();
         bool regex = highlightRule["RegEx"].toBool();
         bool cs = highlightRule["CS"].toBool();
+        bool checkNick = highlightRule["CheckNick"].toBool();
         bool enable = highlightRule["Enable"].toBool();
         QString chanName = highlightRule["Channel"].toString();
 
-        addNewRow(name, regex, cs, enable, chanName, true);
+        addNewRow(name, regex, cs, checkNick, enable, chanName, true);
     }
 
     switch (notificationSettings.highlightNick())

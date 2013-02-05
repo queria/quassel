@@ -164,6 +164,7 @@ void QtUiMessageProcessor::checkForHighlight(Message &msg)
                 rx = QRegExp("(^|\\W)" + QRegExp::escape(rule.name) + "(\\W|$)", rule.caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive);
             }
             bool match = (rx.indexIn(msg.contents()) >= 0);
+            match = match || (rule.checkSenderNick && (rx.indexIn(msg.sender()) >= 0));
             if (match) {
                 msg.setFlags(msg.flags() | Message::Highlight);
                 return;
@@ -190,6 +191,7 @@ void QtUiMessageProcessor::highlightListChanged(const QVariant &variant)
         _highlightRules << HighlightRule(rule["Name"].toString(),
             rule["Enable"].toBool(),
             rule["CS"].toBool() ? Qt::CaseSensitive : Qt::CaseInsensitive,
+            rule["CheckNick"].toBool(),
             rule["RegEx"].toBool(),
             rule["Channel"].toString());
         iter++;

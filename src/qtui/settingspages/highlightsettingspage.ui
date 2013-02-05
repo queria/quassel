@@ -40,6 +40,11 @@
         </column>
         <column>
          <property name="text">
+          <string>Nick</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
           <string>CS</string>
          </property>
         </column>
